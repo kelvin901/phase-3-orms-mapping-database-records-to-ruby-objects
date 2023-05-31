@@ -30,12 +30,12 @@ class Song
 
   def save
     sql = <<-SQL
-      INSERT INTO songs (name, album)
-      VALUES (?, ?)
+    SELECT *
+    FROM songs
     SQL
 
     # insert the song
-    DB[:conn].execute(sql, self.name, self.album)
+    DB[:conn].execute(sql, self.namDB[:conn].execute(sql)e, self.album)
 
     # get the song ID from the database and save it to the Ruby instance
     self.id = DB[:conn].execute("SELECT last_insert_rowid() FROM songs")[0][0]
@@ -48,5 +48,20 @@ class Song
     song = Song.new(name: name, album: album)
     song.save
   end
+  def self.new_from_db(row)
+    # self.new is equivalent to Song.new
+    self.new(id: row[0], name: row[1], album: row[2])
+  end
+  def self.find_by_name(name)
+    sql = <<-SQL
+      SELECT *
+      FROM songs
+      WHERE name = ?
+      LIMIT 1
+    SQL
+
+    DB[:conn].execute(sql, name).map do |row|
+      self.new_from_db(row)
+    end.first
 
 end
